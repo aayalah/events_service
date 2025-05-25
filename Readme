@@ -3,7 +3,11 @@
 - allows you to create a Group - done
 - allows you to create an event of group - done
 - allows you to join and leave to group - done
-- authentication
-- get notifications by email when a new event has beeen added to subscribed group
+- authentication (bcrypt password hash and jwt token) - done 
+- get notifications by email when a new event has been added to subscribed group
 - can search for events near location
+- Add support for paid events
 - swagger documentation
+- update Readme
+- Add tests
+
