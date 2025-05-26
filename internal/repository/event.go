@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"github/eventApp/internal/models"
+	"time"
 
 	"github.com/uptrace/bun"
 )
@@ -14,10 +15,16 @@ type EventRepository struct {
 type Event struct {
 	bun.BaseModel `bun:"table:events,alias:u"`
 
-	ID      int64 `bun:",pk,autoincrement,nullzero"`
-	GroupID int64
-	Name    string
-	Date    string
+	ID          int64     `bun:",pk,autoincrement,nullzero"`
+	GroupID     int64     `bun:",notnull"`
+	Name        string    `bun:",notnull"`
+	Time        time.Time `bun:"time,notnull"`
+	Location    string    `bun:",notnull"`
+	Latitude    float64   `bun:",notnull"`
+	Longitude   float64   `bun:",notnull"`
+	DanceStyles []string
+	Type        string
+	Levels      []string
 }
 
 func NewEventRepository(db *bun.DB, ctx context.Context) (*EventRepository, error) {
@@ -41,9 +48,15 @@ func (s *EventRepository) createEventTable(ctx context.Context) error {
 func (s *EventRepository) CreateEvent(event *models.Event, ctx context.Context) (*models.Event, error) {
 
 	e := &Event{
-		Name:    event.Name,
-		GroupID: event.GroupID,
-		Date:    event.Date,
+		Name:        event.Name,
+		GroupID:     event.GroupID,
+		Time:        event.Time,
+		Latitude:    event.Latitude,
+		Longitude:   event.Longitude,
+		Location:    event.Location,
+		DanceStyles: event.DanceStyles,
+		Type:        event.Type,
+		Levels:      event.Levels,
 	}
 
 	createdEvent := &Event{}
@@ -54,10 +67,16 @@ func (s *EventRepository) CreateEvent(event *models.Event, ctx context.Context) 
 	}
 
 	ce := &models.Event{
-		ID:      createdEvent.ID,
-		Name:    createdEvent.Name,
-		GroupID: createdEvent.GroupID,
-		Date:    createdEvent.Date,
+		ID:          createdEvent.ID,
+		Name:        createdEvent.Name,
+		GroupID:     createdEvent.GroupID,
+		Time:        createdEvent.Time,
+		Latitude:    createdEvent.Latitude,
+		Longitude:   createdEvent.Longitude,
+		Location:    createdEvent.Location,
+		DanceStyles: createdEvent.DanceStyles,
+		Type:        createdEvent.Type,
+		Levels:      createdEvent.Levels,
 	}
 
 	return ce, nil
@@ -66,9 +85,15 @@ func (s *EventRepository) CreateEvent(event *models.Event, ctx context.Context) 
 func (s *EventRepository) UpdateEvent(id int64, event *models.Event, ctx context.Context) (*models.Event, error) {
 
 	e := &Event{
-		Name:    event.Name,
-		GroupID: event.GroupID,
-		Date:    event.Date,
+		Name:        event.Name,
+		GroupID:     event.GroupID,
+		Time:        event.Time,
+		Latitude:    event.Latitude,
+		Longitude:   event.Longitude,
+		Location:    event.Location,
+		DanceStyles: event.DanceStyles,
+		Type:        event.Type,
+		Levels:      event.Levels,
 	}
 
 	updatedEvent := &Event{}
@@ -79,10 +104,16 @@ func (s *EventRepository) UpdateEvent(id int64, event *models.Event, ctx context
 	}
 
 	ue := &models.Event{
-		ID:      updatedEvent.ID,
-		Name:    updatedEvent.Name,
-		GroupID: updatedEvent.GroupID,
-		Date:    updatedEvent.Date,
+		ID:          updatedEvent.ID,
+		Name:        updatedEvent.Name,
+		GroupID:     updatedEvent.GroupID,
+		Time:        updatedEvent.Time,
+		Latitude:    updatedEvent.Latitude,
+		Longitude:   updatedEvent.Longitude,
+		Location:    updatedEvent.Location,
+		DanceStyles: updatedEvent.DanceStyles,
+		Type:        updatedEvent.Type,
+		Levels:      updatedEvent.Levels,
 	}
 
 	return ue, nil
@@ -100,10 +131,16 @@ func (s *EventRepository) GetEvents(groupID int64, ctx context.Context) ([]*mode
 
 	for _, e := range events {
 		mgs = append(mgs, &models.Event{
-			ID:      e.ID,
-			Name:    e.Name,
-			GroupID: e.GroupID,
-			Date:    e.Date,
+			ID:          e.ID,
+			Name:        e.Name,
+			GroupID:     e.GroupID,
+			Time:        e.Time,
+			Latitude:    e.Latitude,
+			Longitude:   e.Longitude,
+			Location:    e.Location,
+			DanceStyles: e.DanceStyles,
+			Type:        e.Type,
+			Levels:      e.Levels,
 		})
 	}
 

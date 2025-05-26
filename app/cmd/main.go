@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/julienschmidt/httprouter"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
@@ -34,6 +35,17 @@ func main() {
 	}
 
 	db := bun.NewDB(sqlDb, pgdialect.New())
+	es, err := elasticsearch.NewTypedClient(elasticsearch.Config{
+		Addresses: config.ELASTIC_SEARCH_ADDRESSES,
+	})
+	if err != nil {
+		log.Fatalf("Error creating the elastic search client: %v", err)
+	}
+
+	_, err = es.Info().Do(context.Background())
+	if err != nil {
+		log.Fatalf("Error pinging Elasticsearch: %v", err)
+	}
 
 	/* repositories */
 	groupToUserRep, err := repository.NewGroupToUserRepository(db, context.Background())
@@ -56,9 +68,14 @@ func main() {
 		log.Fatalf("Error creating event repository: %v", err)
 	}
 
+	eventSearchRep, err := repository.NewEventSearchRepository(es, context.Background())
+	if err != nil {
+		log.Fatalf("Error creating event search repository: %v", err)
+	}
+
 	userService := service.NewUserService(userRep)
 	groupService := service.NewGroupService(groupRep)
-	eventService := service.NewEventService(eventRep)
+	eventService := service.NewEventService(eventRep, eventSearchRep)
 	groupToUserService := service.NewGroupToUserService(groupToUserRep)
 	loginService := service.NewLoginService(config.JWTSECRET, userRep)
 
@@ -82,6 +99,7 @@ func main() {
 	router.POST("/groups/:groupId/users/:userId", middleware.Auth(config.JWTSECRET, handlers.AddUserToGroup(groupToUserService)))
 	router.DELETE("/groups/:groupId/users/:userId", middleware.Auth(config.JWTSECRET, handlers.RemoveUserFromGroup(groupToUserService)))
 
+	router.GET("/events", middleware.Auth(config.JWTSECRET, handlers.GetEventsByDistance(eventService)))
 	http.ListenAndServe(fmt.Sprintf(":%v", config.PORT), router)
 
 }

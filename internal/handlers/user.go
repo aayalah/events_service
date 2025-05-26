@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github/eventApp/internal/service"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -66,7 +65,7 @@ func UpdateUser(s *service.UserService) func(w http.ResponseWriter, r *http.Requ
 			log.Printf("Error converting user id param to int: %v", err)
 		}
 
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Printf("Error reading update users body: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)

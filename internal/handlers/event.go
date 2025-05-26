@@ -143,3 +143,47 @@ func GetEvents(s *service.EventService) func(w http.ResponseWriter, r *http.Requ
 		w.Write(respBody)
 	}
 }
+
+func GetEventsByDistance(s *service.EventService) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+
+		ctx := context.Background()
+
+		lat := r.URL.Query().Get("lat")
+		latFloat64, err := strconv.ParseFloat(lat, 64)
+		if err != nil {
+			log.Printf("Error converting latitude to float64: %v", err)
+			return
+		}
+
+		long := r.URL.Query().Get("long")
+		longFloat64, err := strconv.ParseFloat(long, 64)
+		if err != nil {
+			log.Printf("Error converting longitude to float64: %v", err)
+			return
+		}
+
+		distance := r.URL.Query().Get("distance")
+		distanceFloat64, err := strconv.ParseFloat(distance, 64)
+		if err != nil {
+			log.Printf("Error converting latitude to float64: %v", err)
+			return
+		}
+
+		events, err := s.GetEventsByDistance(latFloat64, longFloat64, distanceFloat64, ctx)
+		if err != nil {
+			log.Printf("Error fetching events: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		respBody, err := json.Marshal(events)
+		if err != nil {
+			log.Printf("Error marshalling get events response: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Write(respBody)
+	}
+}
