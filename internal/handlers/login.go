@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -37,6 +38,16 @@ func Login(s *service.LoginService) func(w http.ResponseWriter, r *http.Request,
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "refresh_token",
+			Value:    loginResp.RefreshToken,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true, // set to true in production (requires HTTPS)
+			SameSite: http.SameSiteStrictMode,
+			MaxAge:   int((7 * 24 * time.Hour).Seconds()), // 7 days
+		})
 
 		respBody, err := json.Marshal(loginResp)
 		if err != nil {

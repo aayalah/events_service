@@ -24,7 +24,8 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Token string `json:"token"`
+	Token        string `json:"token"`
+	RefreshToken string `json:"-"`
 }
 
 func NewLoginService(jwtSecret string, ug userGetter) *LoginService {
@@ -49,22 +50,28 @@ func (ls *LoginService) Login(lr *LoginRequest, ctx context.Context) (*LoginResp
 		return nil, err
 	}
 
-	token, err := generateJWT(user.ID, ls.jwtSecret)
+	token, err := generateJWT(user.ID, ls.jwtSecret, time.Hour*24)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := generateJWT(user.ID, ls.jwtSecret, time.Hour*24*7)
 	if err != nil {
 		return nil, err
 	}
 
 	lresp := &LoginResponse{
-		Token: token,
+		Token:        token,
+		RefreshToken: refreshToken,
 	}
 
 	return lresp, nil
 }
 
-func generateJWT(userID int64, jwtSecret string) (string, error) {
+func generateJWT(userID int64, jwtSecret string, duration time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": userID,
-		"exp":     time.Now().Add(time.Hour * 72).Unix(),
+		"exp":     duration,
 	})
 
 	tokenString, err := token.SignedString([]byte(jwtSecret))
